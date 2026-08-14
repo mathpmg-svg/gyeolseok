@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#14161A">
+<title>결석 보강 관리</title>
+<meta name="description" content="학원 결석과 보강을 달력 하나로 관리합니다. 보강일이 안 잡힌 결석은 빨간 도장으로 바로 보입니다.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="month-nav">
+    <button class="icon-btn" id="prevMonth" aria-label="이전 달">‹</button>
+    <h1 class="month" id="monthLabel">2026.08</h1>
+    <button class="icon-btn" id="nextMonth" aria-label="다음 달">›</button>
+    <button class="today-btn" id="todayBtn">오늘</button>
+  </div>
+  <div class="legend" id="legend" aria-hidden="true"></div>
+  <nav class="students" id="studentBar" aria-label="학생 선택"></nav>
+</header>
+
+<main>
+  <!-- ─────────────── 달력 -->
+  <section class="view" id="view-calendar">
+    <div class="mode-bar" id="modeBar" hidden>
+      <span id="modeText"></span>
+      <button class="ghost-btn" id="modeCancel">그만하기</button>
+    </div>
+
+    <div class="cal-card">
+      <div class="weekdays">
+        <span class="sun">일</span><span>월</span><span>화</span><span>수</span>
+        <span>목</span><span>금</span><span class="sat">토</span>
+      </div>
+      <div class="grid" id="calGrid"></div>
+    </div>
+
+    <div class="row-actions">
+      <button class="primary-btn" id="quickAbsence">결석 여러 날 등록</button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2 id="listTitle">이번 달 결석</h2>
+        <span class="count" id="listCount"></span>
+      </div>
+      <div id="absList"></div>
+    </div>
+
+    <!-- 광고 자리. 자세한 교체 방법은 README-배포.md 참고 -->
+    <div class="ad-slot" data-ad-slot="calendar-bottom">
+      <span>광고 자리</span>
+    </div>
+  </section>
+
+  <!-- ─────────────── 월간 요약 -->
+  <section class="view" id="view-summary" hidden>
+    <div class="stat-strip" id="statStrip"></div>
+    <div class="panel">
+      <div class="panel-head">
+        <h2>월간 요약</h2>
+        <button class="ghost-btn" id="exportCsv">CSV 내보내기</button>
+      </div>
+      <div class="table-wrap"><table class="sum-table" id="sumTable"></table></div>
+    </div>
+    <div class="ad-slot" data-ad-slot="summary-bottom">
+      <span>광고 자리</span>
+    </div>
+  </section>
+
+  <!-- ─────────────── 학생 / 데이터 -->
+  <!-- ─────────────── 학생 -->
+  <section class="view" id="view-manage" hidden>
+    <div class="panel">
+      <div class="panel-head">
+        <h2>학생</h2>
+        <button class="ghost-btn" id="addStudent">학생 추가</button>
+      </div>
+      <div id="studentList"></div>
+    </div>
+
+    <div class="ad-slot" data-ad-slot="manage-bottom">
+      <span>광고 자리</span>
+    </div>
+  </section>
+
+  <!-- ─────────────── 설정 -->
+  <section class="view" id="view-settings" hidden>
+    <div class="panel">
+      <div class="panel-head"><h2>사용법</h2></div>
+      <div class="pad">
+        <button class="ghost-btn wide" id="openGuide">처음 쓰시나요? 사용법 보기</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>달력 표시</h2></div>
+      <div class="pad">
+        <p class="note">달력 칸에 무엇을 보여줄지 고릅니다. 학생을 한 명만 선택해 볼 때는 이름 대신 보강 시간이 나옵니다.</p>
+        <div class="seg" id="calViewSeg">
+          <button data-v="stamp">도장만</button>
+          <button data-v="name">이름만</button>
+          <button data-v="both">도장+이름</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>백업</h2></div>
+      <div class="pad">
+        <div class="warn-box" id="inAppWarn" hidden>
+          <p>
+            지금 <b id="inAppName">앱</b> 안의 브라우저로 열려 있습니다.
+            여기서는 파일 내려받기가 저장되지 않습니다.
+            아래 <b>글자로 백업</b>을 쓰거나, 주소를 복사해 크롬·사파리에서 여세요.
+          </p>
+          <div class="url-row">
+            <span id="appUrl"></span>
+            <button id="copyUrl">복사</button>
+          </div>
+        </div>
+
+        <p class="note">기록은 이 브라우저 안에만 저장됩니다. 브라우저 데이터를 지우거나 기기를 바꾸면 사라지니, 가끔 백업해 두세요.</p>
+
+        <h3 class="sub-h">파일로 백업</h3>
+        <div class="btn-row">
+          <button class="primary-btn" id="exportJson">백업 파일 받기</button>
+          <button class="ghost-btn" id="importJson">백업 파일 열기</button>
+        </div>
+        <input type="file" id="importFile" accept="application/json" hidden>
+
+        <h3 class="sub-h">글자로 백업</h3>
+        <p class="note">카카오톡 안에서 열었을 때처럼 파일 저장이 막힌 곳에서 쓰세요.</p>
+        <div class="btn-row">
+          <button class="primary-btn" id="copyBackup">백업 복사하기</button>
+          <button class="ghost-btn" id="pasteBackup">백업 붙여넣기</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="installPanel" hidden>
+      <div class="panel-head"><h2>앱처럼 쓰기</h2></div>
+      <div class="pad">
+        <p class="note">홈 화면에 추가하면 주소창 없이 앱처럼 열립니다.</p>
+        <button class="primary-btn" id="installBtn">홈 화면에 추가</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>기록 지우기</h2></div>
+      <div class="pad">
+        <p class="note">학생과 결석 기록을 전부 지웁니다. 되돌릴 수 없으니 백업을 먼저 받아 두세요.</p>
+        <button class="danger-btn" id="resetAll">전체 삭제</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar">
+  <button class="tab is-on" data-view="calendar"><span>달력</span></button>
+  <button class="tab" data-view="summary"><span>요약</span></button>
+  <button class="tab" data-view="manage"><span>학생</span></button>
+  <button class="tab" data-view="settings"><span>설정</span></button>
+</nav>
+
+<!-- 바텀시트 -->
+<div class="scrim" id="scrim" hidden></div>
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true">
+  <div class="sheet-grab"></div>
+  <div class="sheet-head">
+    <h3 id="sheetTitle"></h3>
+    <button class="icon-btn" id="sheetClose" aria-label="닫기">✕</button>
+  </div>
+  <div class="sheet-body" id="sheetBody"></div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
