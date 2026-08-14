@@ -3,7 +3,7 @@
 학원과 과외 수업의 결석을 기록하고, 각 결석에 보강일을 연결해 관리하는 웹앱입니다.
 설치가 필요 없고 주소만 열면 안드로이드 · 아이폰 · PC 어디서나 동작합니다.
 
-**바로 쓰기 → mathpmg-svg.github.io/gyeolseok/**
+**바로 쓰기 → https://mathpmg-svg.github.io/gyeolseok/**
 
 
 
